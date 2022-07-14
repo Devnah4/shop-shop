@@ -9,6 +9,8 @@ const StoreProvider = ({ value = [], ...props }) => {
     //sets the state and the outputted value of the provider
     const [state, dispatch] = useProductReducer({
         products: [],
+        cart: [],
+        cartOpen: false,
         categories: [],
         currentCategory: '',
     });
