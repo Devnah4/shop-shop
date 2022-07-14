@@ -1,8 +1,12 @@
-import React, { useEffect } from 'react';
-import { UPDATE_CATEGORIES, UPDATE_CURRENT_CATEGORY } from '../../utils/actions';
-import { useQuery } from '@apollo/client';
-import { QUERY_CATEGORIES } from '../../utils/queries';
+import React, { useEffect } from "react";
+import {
+  UPDATE_CATEGORIES,
+  UPDATE_CURRENT_CATEGORY,
+} from "../../utils/actions";
+import { useQuery } from "@apollo/client";
+import { QUERY_CATEGORIES } from "../../utils/queries";
 import { useStoreContext } from "../../utils/GlobalState";
+import { idbPromise } from "../../utils/helpers";
 
 function CategoryMenu({ setCategory }) {
   // query our category data
@@ -10,21 +14,31 @@ function CategoryMenu({ setCategory }) {
   // store it in a global state object
   const { categories } = state;
   // use the category data from the global object in the UI instead
-  const { data: categoryData } = useQuery(QUERY_CATEGORIES);
+  const { loading, data: categoryData } = useQuery(QUERY_CATEGORIES);
 
   useEffect(() => {
     if (categoryData) {
       dispatch({
         type: UPDATE_CATEGORIES,
-        categories: categoryData.categories
+        categories: categoryData.categories,
+      });
+      categoryData.categories.forEach((category) => {
+        idbPromise("categories", "put", category);
+      });
+    } else if (!loading) {
+      idbPromise("categories", "get").then((categories) => {
+        dispatch({
+          type: UPDATE_CATEGORIES,
+          categories: categories,
+        });
       });
     }
   }, [categoryData, dispatch]);
 
-  const handleClick = id => {
+  const handleClick = (id) => {
     dispatch({
       type: UPDATE_CURRENT_CATEGORY,
-      currentCategory: id
+      currentCategory: id,
     });
   };
 

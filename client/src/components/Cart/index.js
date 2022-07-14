@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useStoreContext } from "../../utils/GlobalState";
-import { TOGGLE_CART } from "../../utils/actions";
+import { TOGGLE_CART, ADD_MULTIPLE_TO_CART } from "../../utils/actions";
+import { idbPromise } from "../../utils/helpers";
 import CartItem from "../CartItem";
 // Auth allows the cart to be rendered contingent on whether or not the user is logged in
 import Auth from "../../utils/auth";
@@ -8,6 +9,17 @@ import "./style.css";
 
 const Cart = () => {
   const [state, dispatch] = useStoreContext();
+
+  useEffect(() => {
+    async function getCart() {
+      const cart = await idbPromise('cart', 'get');
+      dispatch({ type: ADD_MULTIPLE_TO_CART, products: [...cart] });
+    };
+
+    if (!state.cart.length) {
+      getCart();
+    }
+  }, [state.cart.length, dispatch]); //dependency array prevents eternal loop
 
   function toggleCart() {
     dispatch({ type: TOGGLE_CART });
