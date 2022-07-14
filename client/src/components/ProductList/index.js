@@ -1,14 +1,13 @@
-import React, { useEffect } from "react";
-import { useQuery } from "@apollo/client";
+import React, { useEffect } from 'react';
+import ProductItem from '../ProductItem';
+import { useStoreContext } from '../../utils/GlobalState';
+import { UPDATE_PRODUCTS } from '../../utils/actions';
+import { useQuery } from '@apollo/client';
+import { QUERY_PRODUCTS } from '../../utils/queries';
+import { idbPromise } from '../../utils/helpers';
+import spinner from '../../assets/spinner.gif';
 
-import ProductItem from "../ProductItem";
-import { QUERY_PRODUCTS } from "../../utils/queries";
-import spinner from "../../assets/spinner.gif";
-import { useStoreContext } from "../../utils/GlobalState";
-import { UPDATE_PRODUCTS } from "../../utils/actions";
-import { idbPromise } from "../../utils/helpers";
-
-function ProductList({}) {
+function ProductList() {
   const [state, dispatch] = useStoreContext();
 
   const { currentCategory } = state;
@@ -21,15 +20,11 @@ function ProductList({}) {
         type: UPDATE_PRODUCTS,
         products: data.products,
       });
-
-      // takes each product and saves it to indexedDB using a helper function
       data.products.forEach((product) => {
-        idbPromise("products", "put", product);
+        idbPromise('products', 'put', product);
       });
     } else if (!loading) {
-      // if offline will pull data from the product store
-      idbPromise("products", "get").then((products) => {
-        // use data retrieved to change global state
+      idbPromise('products', 'get').then((products) => {
         dispatch({
           type: UPDATE_PRODUCTS,
           products: products,
